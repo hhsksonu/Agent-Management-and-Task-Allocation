@@ -5,7 +5,6 @@ const path = require('path');
 const taskController = require('../controllers/taskController');
 const authMiddleware = require('../middleware/auth');
 
-// Multer configuration for file upload
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, 'uploads/');
@@ -26,10 +25,8 @@ const upload = multer({
   }
 });
 
-// Upload and distribute tasks - protected route
 router.post('/upload', authMiddleware, upload.single('file'), taskController.uploadAndDistribute);
 
-// Get tasks grouped by agent - protected route
 router.get('/by-agent', authMiddleware, taskController.getTasksByAgent);
 
 module.exports = router;

@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 
-// Task schema - stores each record from CSV
 const taskSchema = new mongoose.Schema({
   firstName: {
     type: String,

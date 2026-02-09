@@ -4,10 +4,9 @@ const csv = require('csv-parser');
 const fs = require('fs');
 const xlsx = require('xlsx');
 
-// Upload CSV/Excel and distribute tasks
+// csv/Excel 
 exports.uploadAndDistribute = async (req, res) => {
   try {
-    // Check if file is uploaded
     if (!req.file) {
       return res.status(400).json({ message: 'Please upload a file' });
     }
@@ -17,40 +16,33 @@ exports.uploadAndDistribute = async (req, res) => {
 
     let records = [];
 
-    // Parse file based on extension
     if (fileExtension === 'csv') {
-      // Parse CSV file
       records = await parseCSV(filePath);
     } else if (fileExtension === 'xlsx' || fileExtension === 'xls') {
-      // Parse Excel file
       records = parseExcel(filePath);
     } else {
-      // Delete uploaded file
       fs.unlinkSync(filePath);
       return res.status(400).json({ message: 'Invalid file type. Only CSV, XLS, XLSX allowed' });
     }
 
-    // Validate records
+    // validate 
     if (records.length === 0) {
       fs.unlinkSync(filePath);
       return res.status(400).json({ message: 'No valid records found in file' });
     }
 
-    // Validate required columns
     const firstRecord = records[0];
     if (!firstRecord.FirstName || !firstRecord.Phone) {
       fs.unlinkSync(filePath);
       return res.status(400).json({ message: 'Required columns missing: FirstName, Phone' });
     }
 
-    // Get all agents
     const agents = await Agent.find();
     if (agents.length === 0) {
       fs.unlinkSync(filePath);
       return res.status(400).json({ message: 'No agents available. Please add agents first.' });
     }
 
-    // Distribution logic
     const totalRecords = records.length;
     const totalAgents = agents.length;
     const recordsPerAgent = Math.floor(totalRecords / totalAgents);
@@ -59,15 +51,12 @@ exports.uploadAndDistribute = async (req, res) => {
     let currentIndex = 0;
     const tasks = [];
 
-    // Distribute records to agents
     for (let i = 0; i < totalAgents; i++) {
-      // Calculate how many records this agent should get
       let recordsForThisAgent = recordsPerAgent;
       if (i < remainingRecords) {
-        recordsForThisAgent += 1; // First few agents get one extra record
+        recordsForThisAgent += 1; 
       }
 
-      // Assign records to this agent
       for (let j = 0; j < recordsForThisAgent; j++) {
         if (currentIndex < totalRecords) {
           const record = records[currentIndex];
@@ -82,10 +71,9 @@ exports.uploadAndDistribute = async (req, res) => {
       }
     }
 
-    // Save all tasks to database
+    // tasks saving 
     await Task.insertMany(tasks);
 
-    // Delete uploaded file after processing
     fs.unlinkSync(filePath);
 
     res.json({ 
@@ -95,7 +83,6 @@ exports.uploadAndDistribute = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    // Delete file if error occurs
     if (req.file && fs.existsSync(req.file.path)) {
       fs.unlinkSync(req.file.path);
     }
@@ -103,7 +90,6 @@ exports.uploadAndDistribute = async (req, res) => {
   }
 };
 
-// Helper function to parse CSV
 function parseCSV(filePath) {
   return new Promise((resolve, reject) => {
     const results = [];
@@ -115,7 +101,6 @@ function parseCSV(filePath) {
   });
 }
 
-// Helper function to parse Excel
 function parseExcel(filePath) {
   const workbook = xlsx.readFile(filePath);
   const sheetName = workbook.SheetNames[0];
@@ -124,13 +109,10 @@ function parseExcel(filePath) {
   return data;
 }
 
-// Get tasks by agent
 exports.getTasksByAgent = async (req, res) => {
   try {
-    // Get all tasks with agent details
     const tasks = await Task.find().populate('assignedAgent', 'name email mobile');
 
-    // Group tasks by agent
     const tasksByAgent = {};
     tasks.forEach(task => {
       const agentId = task.assignedAgent._id.toString();
@@ -153,7 +135,6 @@ exports.getTasksByAgent = async (req, res) => {
       });
     });
 
-    // Convert to array
     const result = Object.values(tasksByAgent);
 
     res.json({ data: result });
