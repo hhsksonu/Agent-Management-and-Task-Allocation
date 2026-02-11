@@ -374,6 +374,11 @@ This project is created for educational and assessment purposes.
 
 Developed as a Machine Test submission for MERN Stack Developer position.
 
+## Connect With Me
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/hhsksonu)
+[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/hhsksonu)
+
 ## Support
 
 For questions or issues:
